@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edu Target - Pendidikan Pancasila Kelas VI</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .font-display {
+            font-family: 'Fredoka', cursive;
+        }
+        
+        /* Custom Target Animations */
+        @keyframes targetPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-12px) rotate(1deg); }
+        }
+        @keyframes popOut {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.08); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes hitSuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.25); filter: brightness(1.3); }
+            100% { transform: scale(0); opacity: 0; }
+        }
+        @keyframes hitWrong {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            60% { transform: translateX(-10px); }
+            80% { transform: translateX(10px); }
+            100% { transform: translateX(0); }
+        }
+        @keyframes scoreFloat {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-40px) scale(1.3); }
+        }
+
+        .animate-target {
+            animation: floatSlow 3s ease-in-out infinite;
+        }
+        .animate-pop {
+            animation: popOut 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .animate-hit-success {
+            animation: hitSuccess 0.35s ease-out forwards;
+        }
+        .animate-hit-wrong {
+            animation: hitWrong 0.4s ease-in-out;
+        }
+        
+        /* Target Board Pattern */
+        .target-board {
+            background: radial-gradient(circle, #ffffff 25%, #3b82f6 26%, #3b82f6 45%, #1d4ed8 46%, #1d4ed8 70%, #1e3a8a 71%);
+            box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+        }
+        .target-board-amber {
+            background: radial-gradient(circle, #ffffff 25%, #f59e0b 26%, #f59e0b 45%, #d97706 46%, #d97706 70%, #92400e 71%);
+            box-shadow: 0 10px 25px -5px rgba(245, 158, 11, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+        }
+        .target-board-emerald {
+            background: radial-gradient(circle, #ffffff 25%, #10b981 26%, #10b981 45%, #059669 46%, #059669 70%, #065f46 71%);
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+        }
+        .target-board-purple {
+            background: radial-gradient(circle, #ffffff 25%, #8b5cf6 26%, #8b5cf6 45%, #7c3aed 46%, #7c3aed 70%, #4c1d95 71%);
+            box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.5), inset 0 2px 4px rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-amber-400 selection:text-slate-900">
+
+    <!-- TOP BAR / HEADER -->
+    <header class="bg-slate-800/80 backdrop-blur border-b border-slate-700/60 sticky top-0 z-30 px-4 py-3">
+        <div class="max-w-5xl mx-auto flex items-center justify-between">
+            <!-- Brand & Subject Info -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-red-500 flex items-center justify-center shadow-lg shadow-amber-500/30">
+                    <i class="fa-solid me-0 fa-bullseye text-2xl text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-display font-bold text-xl leading-none text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-200 to-white">
+                        EDU TARGET
+                    </h1>
+                    <p class="text-xs text-slate-400 font-medium">Pendidikan Pancasila • Kelas VI</p>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center space-x-2">
+                <button id="soundToggleBtn" onclick="toggleSound()" class="p-2.5 rounded-xl bg-slate-700/70 hover:bg-slate-700 text-slate-300 hover:text-white transition flex items-center justify-center gap-1.5 text-xs font-semibold">
+                    <i id="soundIcon" class="fa-solid fa-volume-high text-amber-400"></i>
+                    <span id="soundStatus" class="hidden sm:inline">Suara ON</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN GAME CONTAINER -->
+    <main class="flex-grow flex flex-col max-w-5xl w-full mx-auto p-4 relative">
+
+        <!-- SCOREBOARD & STATS HUD -->
+        <div id="hudPanel" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 transition-all opacity-100">
+            <!-- Score Box -->
+            <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-3 flex items-center space-x-3 shadow-md">
+                <div class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Skor Pemain</div>
+                    <div id="scoreDisplay" class="font-display text-2xl font-bold text-blue-400">0</div>
+                </div>
+            </div>
+
+            <!-- High Score Box -->
+            <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-3 flex items-center space-x-3 shadow-md">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-crown"></i>
+                </div>
+                <div>
+                    <div class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">High Score</div>
+                    <div id="highScoreDisplay" class="font-display text-2xl font-bold text-amber-400">0</div>
+                </div>
+            </div>
+
+            <!-- Level & Combo Box -->
+            <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-3 flex items-center space-x-3 shadow-md">
+                <div class="w-10 h-10 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div class="flex-1">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Level</span>
+                        <span id="comboBadge" class="hidden text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold animate-pulse">
+                            0x Combo!
+                        </span>
+                    </div>
+                    <div id="levelDisplay" class="font-display text-2xl font-bold text-purple-400">1</div>
+                </div>
+            </div>
+
+            <!-- Timer Box -->
+            <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-3 flex flex-col justify-center shadow-md">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-[10px] uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-clock text-rose-400"></i> Waktu
+                    </span>
+                    <span id="timerText" class="font-display font-bold text-rose-400 text-base">20s</span>
+                </div>
+                <div class="w-full bg-slate-700 rounded-full h-2 overflow-hidden">
+                    <div id="timerBar" class="bg-gradient-to-r from-emerald-400 via-amber-400 to-rose-500 h-full w-full transition-all duration-100 ease-linear"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PLAYING ARENA CARD -->
+        <div class="relative flex-grow bg-slate-800/50 border border-slate-700/70 rounded-3xl p-4 md:p-6 flex flex-col justify-between overflow-hidden shadow-2xl min-h-[420px]">
+            
+            <!-- START SCREEN -->
+            <div id="startScreen" class="absolute inset-0 z-20 bg-slate-900/95 backdrop-blur-md rounded-3xl p-6 flex flex-col items-center justify-center text-center">
+                <div class="w-20 h-20 mb-4 rounded-3xl bg-gradient-to-tr from-amber-500 to-red-500 flex items-center justify-center shadow-xl shadow-amber-500/20 animate-bounce">
+                    <i class="fa-solid fa-bullseye text-4xl text-white"></i>
+                </div>
+                <h2 class="font-display text-3xl md:text-4xl font-bold text-white mb-2">
+                    Edu Target: <span class="text-amber-400">Norma-Norma</span>
+                </h2>
+                <p class="text-slate-300 max-w-md text-sm md:text-base mb-6 leading-relaxed">
+                    Uji pemahamanmu tentang <span class="text-amber-300 font-semibold">Mengenal Norma-Norma (Agama, Kesusilaan, Kesopanan, dan Hukum)</span>. Tekan/Klik papan sasaran yang berisi jawaban benar!
+                </p>
+
+                <!-- Rules Box -->
+                <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-4 max-w-md w-full text-left mb-6 text-xs md:text-sm space-y-2">
+                    <div class="flex items-center text-emerald-400 font-semibold gap-2">
+                        <i class="fa-solid fa-circle-check"></i> Jawaban Benar: <span class="text-white">+100 Poin</span>
+                    </div>
+                    <div class="flex items-center text-rose-400 font-semibold gap-2">
+                        <i class="fa-solid fa-circle-xmark"></i> Jawaban Salah: <span class="text-white">-50 Poin</span>
+                    </div>
+                    <div class="flex items-center text-amber-300 font-semibold gap-2">
+                        <i class="fa-solid fa-fire"></i> Combo Multiplier: Jawab berturut-turut untuk bonus poin!
+                    </div>
+                </div>
+
+                <button onclick="startGame()" class="px-8 py-4 bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:from-amber-400 hover:to-red-400 text-white font-display text-xl font-bold rounded-2xl shadow-lg shadow-orange-500/30 transition hover:scale-105 active:scale-95 flex items-center gap-3">
+                    <i class="fa-solid fa-play"></i> MULAI PERMAINAN
+                </button>
+            </div>
+
+            <!-- GAME OVER SCREEN -->
+            <div id="gameOverScreen" class="hidden absolute inset-0 z-20 bg-slate-900/95 backdrop-blur-md rounded-3xl p-6 flex flex-col items-center justify-center text-center">
+                <div class="w-20 h-20 mb-3 rounded-3xl bg-slate-800 border border-slate-700 flex items-center justify-center text-amber-400 text-4xl shadow-xl">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+                <h2 id="gameOverTitle" class="font-display text-3xl font-bold text-white mb-1">Permainan Selesai!</h2>
+                <p id="gameOverSub" class="text-slate-400 text-sm mb-6">Berikut adalah hasil evaluasi belajarmu:</p>
+
+                <div class="grid grid-cols-2 gap-4 max-w-xs w-full mb-6">
+                    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-3">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Skor Akhir</span>
+                        <span id="finalScore" class="font-display text-3xl font-bold text-amber-400">0</span>
+                    </div>
+                    <div class="bg-slate-800 border border-slate-700 rounded-2xl p-3">
+                        <span class="text-[10px] text-slate-400 uppercase font-bold block">Akurasi</span>
+                        <span id="finalAccuracy" class="font-display text-3xl font-bold text-emerald-400">0%</span>
+                    </div>
+                </div>
+
+                <div id="newHighScoreNotice" class="hidden mb-6 px-4 py-2 bg-amber-500/20 border border-amber-500/40 rounded-xl text-amber-300 font-bold text-sm animate-pulse">
+                    🎉 Rekor Baru Tercipta! 🎉
+                </div>
+
+                <div class="flex gap-3">
+                    <button onclick="startGame()" class="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-900 font-display font-bold text-lg rounded-xl shadow-lg shadow-amber-500/20 transition hover:scale-105">
+                        <i class="fa-solid fa-rotate-right me-1"></i> Main Lagi
+                    </button>
+                </div>
+            </div>
+
+            <!-- QUESTION DISPLAY BANNER -->
+            <div id="questionContainer" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-2xl p-4 md:p-5 shadow-lg relative z-10">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-circle-question"></i> Soal <span id="questionNum">1</span>/<span id="totalQuestions">10</span>
+                    </span>
+                    <span id="topicBadge" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                        Norma Agama
+                    </span>
+                </div>
+                <h2 id="questionText" class="font-display text-lg md:text-xl text-white font-semibold leading-relaxed">
+                    Memuat pertanyaan...
+                </h2>
+            </div>
+
+            <!-- TARGET BOARDS CONTAINER / ARENA -->
+            <div id="targetArena" class="relative flex-grow min-h-[260px] my-4 flex items-center justify-center grid grid-cols-1 md:grid-cols-2 gap-4 p-2">
+                <!-- Targets generated via JavaScript -->
+            </div>
+
+            <!-- EDUCATIONAL EXPLANATION TOAST / FEEDBACK -->
+            <div id="feedbackToast" class="hidden w-full bg-slate-900/95 border border-slate-700 p-3 rounded-xl flex items-start space-x-3 shadow-2xl relative z-10 transition-all">
+                <div id="feedbackIcon" class="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-lg font-bold">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <div class="flex-grow">
+                    <div id="feedbackTitle" class="font-bold text-sm">Jawaban Tepat!</div>
+                    <div id="feedbackText" class="text-xs text-slate-300 mt-0.5">Penjelasan norma...</div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="text-center py-3 text-xs text-slate-500 border-t border-slate-800 bg-slate-900">
+        Edu Target • Media Pembelajaran Interaktif Pendidikan Pancasila SD Kelas VI
+    </footer>
+
+    <script>
+        /* WEB AUDIO SYNTHESIZER FOR SOUND EFFECTS */
+        class AudioSynth {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+            }
+
+            playCorrect() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                
+                const osc1 = this.ctx.createOscillator();
+                const osc2 = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc1.type = 'sine';
+                osc2.type = 'triangle';
+
+                // Play arpeggio
+                osc1.frequency.setValueAtTime(523.25, now); // C5
+                osc1.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                osc1.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                osc1.frequency.setValueAtTime(1046.50, now + 0.3); // C6
+
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+
+                osc1.connect(gain);
+                osc2.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc1.start(now);
+                osc2.start(now);
+                osc1.stop(now + 0.5);
+                osc2.stop(now + 0.5);
+            }
+
+            playWrong() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(180, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.3);
+
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.35);
+            }
+
+            playCombo() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, now);
+                osc.frequency.setValueAtTime(1174.66, now + 0.08);
+
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+
+            playLevelUp() {
+                if (!this.enabled) return;
+                this.init();
+                const now = this.ctx.currentTime;
+
+                const notes = [440, 554.37, 659.25, 880];
+                notes.forEach((freq, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.3);
+                });
+            }
+        }
+
+        const audioSynth = new AudioSynth();
+
+        function toggleSound() {
+            audioSynth.enabled = !audioSynth.enabled;
+            const soundIcon = document.getElementById('soundIcon');
+            const soundStatus = document.getElementById('soundStatus');
+
+            if (audioSynth.enabled) {
+                soundIcon.className = 'fa-solid fa-volume-high text-amber-400';
+                soundStatus.textContent = 'Suara ON';
+            } else {
+                soundIcon.className = 'fa-solid fa-volume-xmark text-slate-500';
+                soundStatus.textContent = 'Suara OFF';
+            }
+        }
+
+        // QUESTION BANK FOR NORMA-NORMA (KELAS VI SD)
+        const questionBank = [
+            {
+                topic: "Pengertian Norma",
+                question: "Apa yang dimaksud dengan norma dalam kehidupan masyarakat?",
+                options: [
+                    "Aturan atau ketentuan yang mengikat warga kelompok dalam masyarakat",
+                    "Hukuman pidana yang diberikan kepada pelanggar lalu lintas",
+                    "Kebebasan setiap orang untuk bertindak sesuka hati",
+                    "Saran tidak tertulis yang boleh diabaikan kapan saja"
+                ],
+                answer: 0,
+                explanation: "Norma adalah pedoman, aturan, atau ketentuan yang mengikat warga masyarakat untuk menciptakan ketertiban."
+            },
+            {
+                topic: "Norma Agama",
+                question: "Norma Agama bersumber dari...",
+                options: [
+                    "Wahyu dan ajaran Tuhan Yang Maha Esa",
+                    "Kesepakatan para tokoh adat setempat",
+                    "Peraturan yang dibuat oleh DPR dan Presiden",
+                    "Bisikan hati nurani diri sendiri"
+                ],
+                answer: 0,
+                explanation: "Norma agama bersumber langsung dari Tuhan YME yang termuat dalam kitab suci masing-masing agama."
+            },
+            {
+                topic: "Sanksi Norma Agama",
+                question: "Sanksi bagi seseorang yang melanggar norma agama adalah...",
+                options: [
+                    "Dosa dan sanksi di akhirat dari Tuhan YME",
+                    "Denda uang tunai oleh kepolisian",
+                    "Hukuman kurungan penjara selama 5 tahun",
+                    "Pengusiran langsung dari wilayah RT/RW"
+                ],
+                answer: 0,
+                explanation: "Pelanggaran norma agama berakibat mendapat dosa dan balasan dari Tuhan Yang Maha Esa."
+            },
+            {
+                topic: "Norma Kesusilaan",
+                question: "Norma kesusilaan bersumber dari...",
+                options: [
+                    "Hati nurani dan suara hati manusia",
+                    "Kitab undang-undang hukum pidana",
+                    "Keputusan kepala desa setempat",
+                    "Adat istiadat nenek moyang"
+                ],
+                answer: 0,
+                explanation: "Norma kesusilaan berasal dari dalam hati nurani manusia yang membedakan perbuatan baik dan buruk."
+            },
+            {
+                topic: "Contoh Norma Kesusilaan",
+                question: "Manakah contoh perilaku yang mencerminkan norma kesusilaan?",
+                options: [
+                    "Jujur dan tidak mencontek saat ujian sekolah",
+                    "Menggunakan helm standar saat naik motor",
+                    "Menyapa tetangga saat berpapasan di jalan",
+                    "Membayar pajak bangunan tepat waktu"
+                ],
+                answer: 0,
+                explanation: "Bersikap jujur dan tidak mencontek timbul dari dorongan hati nurani (norma kesusilaan)."
+            },
+            {
+                topic: "Sanksi Norma Kesusilaan",
+                question: "Akibat atau sanksi utama jika melanggar norma kesusilaan adalah...",
+                options: [
+                    "Perasaan bersalah, menyesal, dan gelisah di dalam hati",
+                    "Surat tilang dari petugas polisi lalu lintas",
+                    "Penyitaan barang-barang pribadi oleh negara",
+                    "Denda ganti rugi berupa uang tunai"
+                ],
+                answer: 0,
+                explanation: "Pelanggaran norma kesusilaan menyebabkan rasa bersalah dan penyesalan mendalam dalam batin."
+            },
+            {
+                topic: "Norma Kesopanan",
+                question: "Norma kesopanan bersumber dari...",
+                options: [
+                    "Pergaulan dan tata krama dalam masyarakat",
+                    "Undang-Undang Dasar Negara tahun 1945",
+                    "Kitab Suci agama-agama resmi",
+                    "Keputusan pengadilan negeri"
+                ],
+                answer: 0,
+                explanation: "Norma kesopanan lahir dari pergaulan dan kebiasaan sehari-hari dalam kelompok masyarakat."
+            },
+            {
+                topic: "Contoh Norma Kesopanan",
+                question: "Sikap cermin penerapan norma kesopanan adalah...",
+                options: [
+                    "Mencium tangan orang tua saat berpamitan sekolah",
+                    "Menghentikan kendaraan saat lampu merah menyala",
+                    "Menjalankan ibadah sesuai keyakinan",
+                    "Mengembalikan barang yang ditemukan kepada pemiliknya"
+                ],
+                answer: 0,
+                explanation: "Mencium tangan orang tua dan berbicara santun merupakan wujud norma kesopanan/tata krama."
+            },
+            {
+                topic: "Norma Hukum",
+                question: "Pernyataan yang BENAR mengenai Norma Hukum adalah...",
+                options: [
+                    "Dibuat oleh lembaga resmi negara dan sanksinya tegas serta memaksa",
+                    "Bersumber hanya dari kebiasaan turun-temurun masyarakat",
+                    "Tidak memiliki aturan tertulis dan bebas dilanggar",
+                    "Sanksinya berupa perasaan menyesal di dalam hati saja"
+                ],
+                answer: 0,
+                explanation: "Norma hukum dibuat oleh badan resmi (pemerintah/negara) serta memiliki sanksi yang tegas dan mengikat."
+            },
+            {
+                topic: "Contoh Norma Hukum",
+                question: "Manakah tindakan yang patuh terhadap norma hukum?",
+                options: [
+                    "Pengendara sepeda motor wajib memiliki SIM dan memakai helm",
+                    "Makan menggunakan tangan kanan saat bersama teman",
+                    "Mengucapkan salam saat masuk ke rumah orang lain",
+                    "Selalu berbuat jujur kepada siapapun"
+                ],
+                answer: 0,
+                explanation: "Aturan memiliki SIM dan menggunakan helm diatur tegas dalam Undang-Undang Lalu Lintas (Norma Hukum)."
+            },
+            {
+                topic: "Tujuan Norma",
+                question: "Tujuan utama dibentuknya norma-norma di masyarakat adalah...",
+                options: [
+                    "Mewujudkan ketertiban, keadilan, dan ketenteraman bersama",
+                    "Membatasi kebebasan warga agar selalu merasa takut",
+                    "Memberikan kekuasaan penuh kepada pejabat pemerintah",
+                    "Menghapus keberagaman budaya di dalam masyarakat"
+                ],
+                answer: 0,
+                explanation: "Norma diciptakan agar kehidupan masyarakat berjalan dengan tertib, aman, tenteram, dan adil."
+            },
+            {
+                topic: "Sanksi Norma Kesopanan",
+                question: "Seseorang yang berperilaku tidak sopan di masyarakat biasanya akan menerima sanksi berupa...",
+                options: [
+                    "Cemoohan, teguran, atau dikucilkan dari pergaulan",
+                    "Hukuman kurungan di dalam penjara",
+                    "Pencabutan kewarganegaraan Indonesia",
+                    "Dosa yang langsung dibalas saat itu juga"
+                ],
+                answer: 0,
+                explanation: "Sanksi norma kesopanan berupa celaan, teguran, atau dikucilkan oleh lingkungan sekitar."
+            }
+        ];
+
+        // GAME STATE VARIABLES
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let highScore = parseInt(localStorage.getItem('eduTargetHighScore')) || 0;
+        let combo = 0;
+        let level = 1;
+        let totalCorrect = 0;
+        let totalAnswered = 0;
+
+        // TIMER VARIABLES
+        let timer = 20;
+        let timerInterval = null;
+        const baseTimeLimit = 20; // seconds per question
+
+        // TARGET COLORS FOR VISUAL VARIETY
+        const targetColorClasses = [
+            'target-board',
+            'target-board-amber',
+            'target-board-emerald',
+            'target-board-purple'
+        ];
+
+        // INITIALIZATION
+        document.getElementById('highScoreDisplay').textContent = highScore;
+
+        function startGame() {
+            // Reset State
+            score = 0;
+            combo = 0;
+            level = 1;
+            totalCorrect = 0;
+            totalAnswered = 0;
+            currentQuestionIndex = 0;
+
+            // Shuffle questions
+            currentQuestions = [...questionBank].sort(() => Math.random() - 0.5);
+
+            // Hide Screens
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            document.getElementById('totalQuestions').textContent = currentQuestions.length;
+
+            updateHUD();
+            loadNextQuestion();
+        }
+
+        function loadNextQuestion() {
+            if (currentQuestionIndex >= currentQuestions.length) {
+                endGame();
+                return;
+            }
+
+            // Hide previous feedback toast
+            document.getElementById('feedbackToast').classList.add('hidden');
+
+            const q = currentQuestions[currentQuestionIndex];
+            document.getElementById('questionNum').textContent = currentQuestionIndex + 1;
+            document.getElementById('topicBadge').textContent = q.topic;
+            document.getElementById('questionText').textContent = q.question;
+
+            // Render Targets
+            renderTargets(q);
+
+            // Reset and start timer based on level
+            startTimer();
+        }
+
+        function renderTargets(q) {
+            const arena = document.getElementById('targetArena');
+            arena.innerHTML = '';
+
+            // Generate option indices and shuffle them
+            const optionsIndices = q.options.map((_, i) => i).sort(() => Math.random() - 0.5);
+
+            optionsIndices.forEach((optIndex, positionIdx) => {
+                const optionText = q.options[optIndex];
+                const isCorrect = (optIndex === q.answer);
+                const styleClass = targetColorClasses[positionIdx % targetColorClasses.length];
+
+                // Create Target Card HTML
+                const targetBtn = document.createElement('button');
+                targetBtn.className = `animate-pop animate-target relative w-full p-4 md:p-5 rounded-2xl text-left transition transform hover:scale-105 active:scale-95 border-2 border-white/20 flex items-center space-x-3 group ${styleClass}`;
+                
+                targetBtn.onclick = (e) => handleAnswer(isCorrect, q, targetBtn, e);
+
+                targetBtn.innerHTML = `
+                    <div class="w-12 h-12 rounded-full bg-white/20 backdrop-blur border border-white/40 flex items-center justify-center font-display font-bold text-lg text-white shrink-0 group-hover:scale-110 transition">
+                        ${String.fromCharCode(65 + positionIdx)}
+                    </div>
+                    <div class="flex-grow text-white font-medium text-sm md:text-base drop-shadow-md leading-snug">
+                        ${optionText}
+                    </div>
+                    <div class="opacity-0 group-hover:opacity-100 transition text-amber-300 text-xl shrink-0">
+                        <i class="fa-solid fa-crosshairs"></i>
+                    </div>
+                `;
+
+                arena.appendChild(targetBtn);
+            });
+        }
+
+        function handleAnswer(isCorrect, questionData, targetElement, event) {
+            clearInterval(timerInterval);
+            totalAnswered++;
+
+            // Disable all targets temporarily
+            const targets = document.querySelectorAll('#targetArena button');
+            targets.forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                // Correct Answer
+                totalCorrect++;
+                combo++;
+                
+                // Combo Bonus Calculation
+                const comboBonus = (combo > 1) ? (combo - 1) * 25 : 0;
+                const pointsGained = 100 + comboBonus;
+                score += pointsGained;
+
+                audioSynth.playCorrect();
+                if (combo > 1) {
+                    setTimeout(() => audioSynth.playCombo(), 150);
+                }
+
+                // Hit Animation
+                targetElement.classList.add('animate-hit-success');
+                showFloatingText(`+${pointsGained}`, event.clientX, event.clientY, 'text-emerald-400');
+
+                // Level up every 3 correct answers
+                if (totalCorrect % 3 === 0) {
+                    level++;
+                    audioSynth.playLevelUp();
+                }
+
+                showFeedback(true, `Jawaban Benar! (+${pointsGained} Poin)`, questionData.explanation);
+
+            } else {
+                // Wrong Answer
+                combo = 0;
+                score = Math.max(0, score - 50);
+
+                audioSynth.playWrong();
+                targetElement.classList.add('animate-hit-wrong');
+                showFloatingText(`-50`, event.clientX, event.clientY, 'text-rose-400');
+
+                showFeedback(false, `Jawaban Kurang Tepat (-50 Poin)`, questionData.explanation);
+            }
+
+            updateHUD();
+
+            // Next question delay
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadNextQuestion();
+            }, 2200);
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            
+            // Speed up timer as level increases
+            const levelTime = Math.max(8, baseTimeLimit - (level - 1) * 2);
+            timer = levelTime;
+
+            const timerBar = document.getElementById('timerBar');
+            const timerText = document.getElementById('timerText');
+
+            timerText.textContent = `${timer}s`;
+            timerBar.style.width = '100%';
+
+            timerInterval = setInterval(() => {
+                timer--;
+                timerText.textContent = `${timer}s`;
+                const percentage = (timer / levelTime) * 100;
+                timerBar.style.width = `${percentage}%`;
+
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function handleTimeOut() {
+            combo = 0;
+            score = Math.max(0, score - 30);
+            audioSynth.playWrong();
+            
+            updateHUD();
+
+            const q = currentQuestions[currentQuestionIndex];
+            showFeedback(false, 'Waktu Habis! (-30 Poin)', q.explanation);
+
+            // Disable targets
+            const targets = document.querySelectorAll('#targetArena button');
+            targets.forEach(btn => btn.disabled = true);
+
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadNextQuestion();
+            }, 2200);
+        }
+
+        function updateHUD() {
+            document.getElementById('scoreDisplay').textContent = score;
+            document.getElementById('highScoreDisplay').textContent = highScore;
+            document.getElementById('levelDisplay').textContent = level;
+
+            const comboBadge = document.getElementById('comboBadge');
+            if (combo > 1) {
+                comboBadge.textContent = `${combo}x Combo! 🔥`;
+                comboBadge.classList.remove('hidden');
+            } else {
+                comboBadge.classList.add('hidden');
+            }
+        }
+
+        function showFeedback(isSuccess, title, text) {
+            const toast = document.getElementById('feedbackToast');
+            const icon = document.getElementById('feedbackIcon');
+            const titleEl = document.getElementById('feedbackTitle');
+            const textEl = document.getElementById('feedbackText');
+
+            toast.classList.remove('hidden');
+
+            if (isSuccess) {
+                toast.className = "w-full bg-slate-900/95 border border-emerald-500/50 p-3 rounded-xl flex items-start space-x-3 shadow-2xl relative z-10 animate-pop";
+                icon.className = "w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 text-lg font-bold";
+                icon.innerHTML = `<i class="fa-solid fa-check"></i>`;
+                titleEl.className = "font-bold text-sm text-emerald-400";
+            } else {
+                toast.className = "w-full bg-slate-900/95 border border-rose-500/50 p-3 rounded-xl flex items-start space-x-3 shadow-2xl relative z-10 animate-pop";
+                icon.className = "w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 text-lg font-bold";
+                icon.innerHTML = `<i class="fa-solid fa-xmark"></i>`;
+                titleEl.className = "font-bold text-sm text-rose-400";
+            }
+
+            titleEl.textContent = title;
+            textEl.textContent = text;
+        }
+
+        function showFloatingText(text, x, y, colorClass) {
+            const floatEl = document.createElement('div');
+            floatEl.className = `fixed font-display font-bold text-2xl ${colorClass} pointer-events-none z-50`;
+            floatEl.style.left = `${x}px`;
+            floatEl.style.top = `${y}px`;
+            floatEl.style.animation = 'scoreFloat 0.8s ease-out forwards';
+            floatEl.textContent = text;
+
+            document.body.appendChild(floatEl);
+            setTimeout(() => floatEl.remove(), 800);
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+
+            // Calculate High Score
+            let isNewHigh = false;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('eduTargetHighScore', highScore);
+                isNewHigh = true;
+            }
+
+            // Calculate Accuracy
+            const accuracy = totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+
+            // DOM Updates
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalAccuracy').textContent = `${accuracy}%`;
+            document.getElementById('highScoreDisplay').textContent = highScore;
+
+            const newHighNotice = document.getElementById('newHighScoreNotice');
+            if (isNewHigh) {
+                newHighNotice.classList.remove('hidden');
+            } else {
+                newHighNotice.classList.add('hidden');
+            }
+
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
